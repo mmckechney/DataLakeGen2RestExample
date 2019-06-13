@@ -53,14 +53,12 @@ namespace DataLakeGen2RestExample
 
             //This call will create an Azure Datalake Gen2 file system
             //See: https://docs.microsoft.com/en-us/rest/api/storageservices/datalakestoragegen2/filesystem
-
             var resourceUrl = $"https://{storageAccountName}.dfs.core.windows.net/{filesystem}?resource=filesystem";
             response = await client.PutAsync(resourceUrl, null);
             Console.WriteLine($"------\r\nCreate Filesystem '{filesystem}' response: {response.StatusCode} -- {response.ReasonPhrase}");
 
             //This call will create a path within a filesystem  
             //See: https://docs.microsoft.com/en-us/rest/api/storageservices/datalakestoragegen2/path
-
             resourceUrl = $"https://{storageAccountName}.dfs.core.windows.net/{filesystem}/{path}?resource=directory";
             response = await client.PutAsync(resourceUrl, null);
             Console.WriteLine($"------\r\nCreate Path '{path}' response: {response.StatusCode} -- {response.ReasonPhrase}");
@@ -70,19 +68,11 @@ namespace DataLakeGen2RestExample
             string tmpFile = Path.GetTempFileName();
             string fileName = HttpUtility.UrlEncode(Path.GetFileName(tmpFile));
             resourceUrl = $"https://{storageAccountName}.dfs.core.windows.net/{filesystem}/{path}/{fileName}?resource=file";
-            using (var tmpContent = new StreamContent(new FileStream(tmpFile,FileMode.Open,FileAccess.Read)))
-            {
-                HttpRequestMessage newFileMsg = new HttpRequestMessage(HttpMethod.Put, resourceUrl);
-                newFileMsg.Content = tmpContent;
-                newFileMsg.Content.Headers.Add("x-ms-date", DateTime.UtcNow.ToString("R", CultureInfo.InvariantCulture));
-                newFileMsg.Content.Headers.Add("x-ms-client-request-id", "b213485b-001f-0035-5666-200672000000");
-                response = await client.SendAsync(newFileMsg);
-            }
+            response = await client.PutAsync(resourceUrl, null);
             Console.WriteLine($"------\r\nCreate File '{fileName}' response: {response.StatusCode} -- {response.ReasonPhrase}");
 
             //This call will upload a file within a filesystem  
             //See: https://docs.microsoft.com/en-us/rest/api/storageservices/datalakestoragegen2/path
-
             File.WriteAllText(tmpFile, $"this is sample file content for {tmpFile}");
             using (var formContent = new StreamContent(new FileStream(tmpFile, FileMode.Open, FileAccess.Read)))
             {
@@ -99,8 +89,6 @@ namespace DataLakeGen2RestExample
                 HttpRequestMessage flushMsg = new HttpRequestMessage(HttpMethod.Patch, flushUrl);
                 response = await client.SendAsync(flushMsg);
                 Console.WriteLine($"------\r\nBuffer flush '{fileName}' response: {response.StatusCode} -- {response.ReasonPhrase}");
-
-
             }
                        
             try
